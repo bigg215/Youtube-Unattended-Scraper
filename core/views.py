@@ -1,6 +1,7 @@
 from django.conf import settings
-from django.shortcuts import get_object_or_404, render, redirect, HttpResponse
+from django.shortcuts import get_object_or_404, render, redirect, HttpResponse, reverse
 from django.views.generic.base import View
+from django.contrib import messages
 
 from oauth2client.client import flow_from_clientsecrets, OAuth2WebServerFlow
 from oauth2client.contrib import xsrfutil
@@ -15,6 +16,8 @@ from dateutil import parser
 import datetime
 
 from django.views.generic import TemplateView
+
+from pytube import YouTube
 
 flow = flow_from_clientsecrets(
 			settings.GOOGLE_OAUTH2_CLIENT_SECRETS_JSON,
@@ -111,3 +114,23 @@ def playlist_details(request, playlist):
 	return render(request, 'core/playlist.html', {
 				'response': response,
 			})
+
+def video_details(request, video):
+
+	yt = YouTube(f'http://youtube.com/watch?v={video}')
+
+	return render(request, 'core/video.html', {
+		'progressive': yt.streams.filter(progressive=True).order_by('resolution').desc().all(),
+		'dash':  yt.streams.filter(adaptive=True, only_video=True).desc().all(),
+		'audio': yt.streams.filter(only_audio=True).desc().all(),
+		'video': video,
+	})
+
+def video_download(request, video, itag):
+
+	yt = YouTube(f'http://youtube.com/watch?v={video}')
+	yt.streams.get_by_itag(itag).download(settings.VIDEO_DIR)
+
+	messages.success(request, f'Video with an ID of {video} and itag of {itag} downloaded successfully to {settings.VIDEO_DIR}')
+
+	return redirect(reverse('core:home'))

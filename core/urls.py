@@ -13,4 +13,6 @@ urlpatterns = [
     path('auth/', views.AuthCallbackView.as_view(), name='authcallback'),
     path('updateprofile/', views.update_youtube_profile, name='updateprofile'),
     path('playlists/<str:playlist>', views.playlist_details, name="playlistdetails"),
+    path('video/<str:video>', views.video_details, name="videodetails"),
+    path('video/<str:video>/<int:itag>', views.video_download, name="videodownload"),
 ]

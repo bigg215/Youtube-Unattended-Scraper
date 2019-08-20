@@ -1,0 +1,24 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Playlist Item Details{% endblock %}
+
+{% block content %}
+
+<h1>Available Stream Sources</h1>
+
+<h3>Progressive Legacy Streams</h3>
+{% for item in progressive %}
+<p><a href="{% url 'core:videodownload' video item.itag %}">Download</a> --> {{ item }}</p>
+{% endfor %}
+
+<h3>DASH Streams</h3>
+{% for item in dash %}
+<p>{{ item }}</p>
+{% endfor %}
+
+<h3>Audio Streams</h3>
+{% for item in audio %}
+<p>{{ item }}</p>
+{% endfor %}
+
+{% endblock %}

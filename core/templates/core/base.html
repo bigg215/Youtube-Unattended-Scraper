@@ -16,6 +16,12 @@
   </div>
   <div style="clear: both;"></div>
   <main>
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+        &nbsp;
+      {% endfor %}
+    {% endif %}
     {% block content %}
     {% endblock %}
   </main>

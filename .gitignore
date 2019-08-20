@@ -85,6 +85,7 @@ target/
 __pycache__/
 local_settings.py
 client_secret_732162352889-morcic676e13tm559kcf3coqghh9atmp.apps.googleusercontent.com.json
+downloads/
 
 .env
 db.sqlite3
