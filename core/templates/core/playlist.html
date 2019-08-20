@@ -1,0 +1,23 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Playlist Item Details{% endblock %}
+
+{% block content %}
+
+{% for item in response.items %}
+<div>
+	<img style="float: left;" src="{{ item.snippet.thumbnails.default.url }}" />
+	<ul style="float: left">
+		<li>{{ item.snippet.title }}</li>
+		<li>{{ item.snippet.resourceId.videoId }}</li>
+		<li><a href="https://www.youtube.com/watch?v={{ item.snippet.resourceId.videoId }}" target="_blank">Youtube Player Link</a></li>
+	</ul>
+</div>
+<div style="clear: both;">&nbsp;</div>
+{% endfor %}
+
+{% endblock %}
+
+
+
+

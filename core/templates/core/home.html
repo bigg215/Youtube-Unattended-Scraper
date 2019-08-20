@@ -1,0 +1,29 @@
+{% extends 'core/base.html' %}
+
+{% block title %}API Testing{% endblock %}
+
+{% block content %}
+
+{% for item in response.items %}
+
+<div>
+	<img style="float: left;" src="{{ item.snippet.thumbnails.default.url }}" />
+	<ul style="float: left;">
+		<li><a href="{% url 'core:playlistdetails' item.id %}">{{ item.snippet.title }}</a></li>
+		<li>PL ID: {{ item.id }}</li>
+		<li>Video Count: {{ item.contentDetails.itemCount }}</li>
+	</ul>
+	<div style="clear: both;"></div>
+</div>
+<div>&nbsp;</div>
+
+{% endfor %}
+
+<div>
+</div>
+
+{% endblock %}
+
+
+
+

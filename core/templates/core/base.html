@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}YTDB{% endblock %}</title>
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js?lang=css&amp;skin=sunburst"></script>
+</head>
+<body>
+  <div id="dashboard-header">
+  	<img style="float: left;" src="{{ user.youtubeprofile.thumbnail_uri }}" />
+  	<ul style="float: left;">
+  		<li>ID: {{ user.youtubeprofile.channel_id }}</li>
+  		<li>Title: {{ user.youtubeprofile.channel_title }}</li>
+  		<li>Description: {{ user.youtubeprofile.description }}</li>
+  		<li>Created: {{user.youtubeprofile.publish_date }}</li>
+  </div>
+  <div style="clear: both;"></div>
+  <main>
+    {% block content %}
+    {% endblock %}
+  </main>
+</body>
+</html>
