@@ -13,12 +13,12 @@
 
 <h3>DASH Streams</h3>
 {% for item in dash %}
-<p>{{ item }}</p>
+<p><a href="{% url 'core:videodownload' video item.itag %}">Download</a> --> {{ item }}</p>
 {% endfor %}
 
 <h3>Audio Streams</h3>
 {% for item in audio %}
-<p>{{ item }}</p>
+<p><a href="{% url 'core:videodownload' video item.itag %}">Download</a> --> {{ item }}</p>
 {% endfor %}
 
 {% endblock %}
