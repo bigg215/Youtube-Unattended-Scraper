@@ -8,7 +8,7 @@ from . import views
 
 app_name = 'core'
 urlpatterns = [
-    path('', views.HomePageView.as_view(), name='home'),
+    path('', views.display_home, name='home'),
     path('authorize/', views.oauth2_authorize, name='authorize'),
     path('auth/', views.oauth2_callback, name='authcallback'),
     path('updateprofile/', views.update_youtube_profile, name='updateprofile'),

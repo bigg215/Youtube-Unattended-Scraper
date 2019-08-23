@@ -127,7 +127,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 VIDEO_DIR = os.path.join(BASE_DIR, 'downloads')
 
-LOGIN_REDIRECT_URL = 'home'
-LOGOUT_REDIRECT_URL = 'home'
+LOGIN_REDIRECT_URL = 'core:home'
+LOGOUT_REDIRECT_URL = 'login'
 
 GOOGLE_OAUTH2_CLIENT_SECRETS_JSON = os.path.join(BASE_DIR, 'client_secret_732162352889-morcic676e13tm559kcf3coqghh9atmp.apps.googleusercontent.com.json')

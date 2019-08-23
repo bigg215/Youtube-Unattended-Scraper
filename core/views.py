@@ -3,6 +3,8 @@ from django.shortcuts import get_object_or_404, render, redirect, HttpResponse, 
 from django.views.generic.base import View
 from django.contrib import messages
 from django.http import HttpResponseBadRequest
+from django.contrib.auth.decorators import login_required
+from django.urls import resolve
 
 from oauth2client.client import flow_from_clientsecrets, OAuth2WebServerFlow, FlowExchangeError
 from oauth2client.clientsecrets import loadfile
@@ -58,7 +60,7 @@ def _create_flow(request, scopes, return_url=None):
 		client_secret=client_info['client_secret'],
 		scope=scopes,
 		state=state,
-		redirect_uri=client_info['redirect_uris'][0]
+		redirect_uri=request.build_absolute_uri(reverse('core:authcallback'))
 	)
 
 	flow_key = _FLOW_KEY.format(csrf_token)
@@ -166,27 +168,30 @@ def oauth2_callback(request):
 
 	return redirect(return_url)
 
-class HomePageView(View):
+@login_required
+def display_home(request):
+	
+	credentials = get_storage(request).get()
+	if credentials is None or credentials.invalid == True:
+		return redirect('{0}?return_url={1}'.format(reverse('core:authorize'), request.build_absolute_uri()))
+	
+	youtube = googleapiclient.discovery.build(
+		'youtube', 'v3', credentials=credentials
+	)
 
-	def get(self, request, *args, **kwargs):
-		
-		credentials = get_storage(request).get()
+	api_request = youtube.playlists().list(
+		part="snippet,contentDetails",
+		maxResults=25,
+		mine=True,
+	)
 
-		youtube = googleapiclient.discovery.build(
-			'youtube', 'v3', credentials=credentials)
+	response = api_request.execute()
 
-		api_request = youtube.playlists().list(
-			part="snippet,contentDetails",
-			maxResults=25,
-			mine=True,
-		)
+	return render(request, 'core/home.html', {
+		'response':response,
+	})
 
-		response = api_request.execute()
-
-		return render(request, 'core/home.html', {
-			'response': response,
-		})
-
+@login_required
 def update_youtube_profile(request):
 	user = get_object_or_404(User, pk=request.user.id)
 
@@ -209,6 +214,7 @@ def update_youtube_profile(request):
 
 	return redirect('/core')
 
+@login_required
 def playlist_details(request, playlist):
 	credentials = get_storage(request).get()
 
