@@ -26,6 +26,9 @@ from django.views.generic import TemplateView
 
 from pytube import YouTube
 
+from core.tasks import download_video_task
+from celery.result import AsyncResult
+
 _CSRF_KEY = 'google_oauth2_csrf_token'
 _FLOW_KEY = 'google_oauth2_flow_{0}'
 
@@ -170,7 +173,7 @@ def oauth2_callback(request):
 
 @login_required
 def display_home(request):
-	
+
 	credentials = get_storage(request).get()
 	if credentials is None or credentials.invalid == True:
 		return redirect('{0}?return_url={1}'.format(reverse('core:authorize'), request.build_absolute_uri()))
@@ -233,6 +236,17 @@ def playlist_details(request, playlist):
 
 def video_details(request, video):
 
+	if 'job' in request.GET:
+		job_id = request.GET['job']
+		job = AsyncResult(job_id)
+		data = {'status': job.status}
+		if job.result is not None:
+			data.update(job.result)
+		return render(request, 'core/show.html', {
+			'data': data,
+			'task_id': job_id,
+		})
+
 	yt = YouTube(f'http://youtube.com/watch?v={video}')
 
 	return render(request, 'core/video.html', {
@@ -242,11 +256,30 @@ def video_details(request, video):
 		'video': video,
 	})
 
+def video_download_state(request):
+	data = 'Fail'
+	if request.is_ajax():
+		if 'task_id' in request.POST.keys() and request.POST['task_id']:
+			task_id = request.POST['task_id']
+			task = AsyncResult(task_id)
+			data = {'status': task.status}
+			if task.result is not None:
+				data.update(task.result)
+		else:
+			data = 'No task_id in request'
+	else:
+		data = 'Not an Ajax request'
+	
+	json_data = json.dumps(data)
+	return HttpResponse(json_data, content_type='application/json')
+
 def video_download(request, video, itag):
+	
+	#yt = YouTube(f'http://youtube.com/watch?v={video}')
+	#yt.streams.get_by_itag(itag).download(settings.VIDEO_DIR)
+	
+	job = download_video_task.delay(video, itag)
 
-	yt = YouTube(f'http://youtube.com/watch?v={video}')
-	yt.streams.get_by_itag(itag).download(settings.VIDEO_DIR)
+	#messages.success(request, f'Video with an ID of {video} and itag of {itag} downloaded successfully to {settings.VIDEO_DIR}')
 
-	messages.success(request, f'Video with an ID of {video} and itag of {itag} downloaded successfully to {settings.VIDEO_DIR}')
-
-	return redirect(reverse('core:home'))
+	return redirect(reverse('core:videodetails', args=(video,)) + '?job=' + job.id)
