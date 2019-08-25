@@ -3,22 +3,114 @@
 {% block title %}Playlist Item Details{% endblock %}
 
 {% block content %}
+<ul class="list-unstyled my-4">
+        {% for item in response.items %}
+        <li class="media my-4">
+            <img src="{{ item.snippet.thumbnails.medium.url }}" class="align-self-start mr-3" alt="{{ item.snippet.title }}">
+            <div class="media-body">
+                <h5 class="mt-0 mb-1">{{ item.snippet.title }} <small class="text-muted"><em>{{ item.id }}</em></small></h5>
+                <small class="text-muted"><strong>{{ item.contentDetails.duration }}</strong> Published by {{ item.snippet.channelTitle }} on {{ item.snippet.publishedAt }}</small>
+                <p class="my-2">{{ item.snippet.description }}</p>
+                {% for tag in item.snippet.tags %}
+                <span class="badge badge-pill badge-info">{{ tag }}</span>
+                {% endfor %}
+                <div id="iframe-holder" class="container my-4">
+                    {% autoescape off %}{{ item.player.embedHtml }}{% endautoescape %}
+                </div>
+                <ul class="list-group list-group-horizontal my-4 justify-content-center">
+                    <li class="list-group-item">{{ item.statistics.viewCount }} Views</li>
+                    <li class="list-group-item">{{ item.statistics.likeCount }} Likes</li>
+                    <li class="list-group-item">{{ item.statistics.dislikeCount }} Dislikes</li>
+                    <li class="list-group-item">{{ item.statistics.favoriteCount }} Favorites</li>
+                    <li class="list-group-item">{{ item.statistics.commentCount }} Comments</li>
+                </ul>
+            </div>
+        </li>
+        {% endfor %}	
+    </ul>
 
-<h1>Available Stream Sources</h1>
+<h3>Available Streams</h3>
 
-<h3>Progressive Legacy Streams</h3>
-{% for item in progressive %}
-<p><a href="{% url 'core:videodownload' video item.itag %}">Download</a> --> {{ item }}</p>
-{% endfor %}
+<h4>Progress Streams</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Res</th>
+            <th scope="col">FPS</th>
+            <th scope="col">Video Codec</th>
+            <th scope="col">Audio Codec</th>
+            <th scope="col">MIME</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in progressive %}
+        <tr>
+            <th scope="row">{{ item.itag }}</th>
+            <td>{{ item.resolution }}</td>
+            <td>{{ item.fps }}</td>
+            <td>{{ item.video_codec }}</td>
+            <td>{{ item.audio_codec }}</td>
+            <td>{{ item.mime_type }}</td>
+            <td><a class="btn btn-primary" href="{% url 'core:videodownload' video item.itag %}" role="button">Download</span></a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
-<h3>DASH Streams</h3>
-{% for item in dash %}
-<p><a href="{% url 'core:videodownload' video item.itag %}">Download</a> --> {{ item }}</p>
-{% endfor %}
+<h4>Adaptive Streams</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Res</th>
+            <th scope="col">FPS</th>
+            <th scope="col">Video Codec</th>
+            <th scope="col">MIME</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in dash %}
+        {% if item.resolution != None %}
+        <tr>
+            <th scope="row">{{ item.itag }}</th>
+            <td>{{ item.resolution }}</td>
+            <td>{{ item.fps }}</td>
+            <td>{{ item.video_codec }}</td>
+            <td>{{ item.mime_type }}</td>
+            <td><a class="btn btn-primary" href="{% url 'core:videodownload' video item.itag %}" role="button">Download</span></a></td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
 
-<h3>Audio Streams</h3>
-{% for item in audio %}
-<p><a href="{% url 'core:videodownload' video item.itag %}">Download</a> --> {{ item }}</p>
-{% endfor %}
+<h4>Audio Only Streams</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">ABR</th>
+            <th scope="col">FPS</th>
+            <th scope="col">Audio Codec</th>
+            <th scope="col">MIME</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in audio %}
+        <tr>
+            <th scope="row">{{ item.itag }}</th>
+            <td>{{ item.abr }}</td>
+            <td>{{ item.fps }}</td>
+            <td>{{ item.audio_codec }}</td>
+            <td>{{ item.mime_type }}</td>
+            <td><a class="btn btn-primary" href="{% url 'core:videodownload' video item.itag %}" role="button">Download</span></a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
 {% endblock %}

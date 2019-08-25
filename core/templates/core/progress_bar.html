@@ -1,0 +1,52 @@
+<div id="progress-wrapper">
+    <p>Task Status: <span id="user-count">PENDING</span></p>    
+    <div class="status"></div>
+    <div class="progress">
+        <div class="bar"></div>
+    </div>
+    <input id="returnBtn" type=button value="Ok" style="visibility:hidden; margin-top:10px;"onClick="removeProgressBar()">
+</div>
+    
+<script type="text/javascript">
+    var poll_xhr;
+    var willstop = 0;
+    
+    function removeProgressBar() {
+        var elem = document.getElementById('progress-wrapper');
+        elem.parentNode.removeChild(elem);
+        return false;
+    }
+
+    (function(){
+        var poll = function(){
+        var task_id = "{{task_id}}";
+        poll_xhr = $.ajax({
+            url:'poll_state/',
+            type: 'POST',
+            data: {
+                task_id: task_id,
+                csrfmiddlewaretoken: "{{csrf_token}}",
+            },
+            success: function(result) {
+                        if (result.status == 'SUCCESS' || result.status == 'FAILURE') {
+                            willstop = 1;
+                            document.getElementById("user-count").textContent=result.status;
+                            jQuery('.bar').css({'width': 100 + '%'});
+                            jQuery('.bar').html(100 + '%');
+                            document.getElementById('returnBtn').style.visibility = 'visible';
+                            } else if (result.status !== 'PENDING') {
+                            jQuery('.bar').css({'width': result.process_percent + '%'});
+                            jQuery('.bar').html(result.process_percent + '%');
+                            document.getElementById("user-count").textContent=result.status;
+                            };
+                        }
+        });
+        };
+        var refreshIntervalId = setInterval(function() {
+        poll();
+        if(willstop == 1){
+            clearInterval(refreshIntervalId);
+        }
+        },500);
+    })();
+</script>

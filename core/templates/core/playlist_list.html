@@ -1,0 +1,21 @@
+{% extends 'core/base.html' %}
+
+{% block title %}API Testing{% endblock %}
+
+{% block content %}
+
+<ul class="list-unstyled my-4">
+	{% for item in response.items %}
+	<li class="media my-4">
+		<img src="{{ item.snippet.thumbnails.medium.url }}" class="align-self-start mr-3" alt="{{ item.snippet.title }}">
+		<div class="media-body">
+			<h5 class="mt-0 mb-1">{{ item.snippet.title }}</h5>
+			<small class="text-muted"><em>{{ item.id }}</em></small>
+			<p>{% if not item.snippet.description %}No description.{% endif %}{{ item.snippet.description }}</p>
+			<a class="btn btn-primary" href="{% url 'core:playlistdetails' item.id %}" role="button">View Videos <span class="badge badge-light">{{ item.contentDetails.itemCount }}</span></a>
+		</div>
+	</li>
+	{% endfor %}	
+</ul>
+
+{% endblock %}

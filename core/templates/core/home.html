@@ -4,23 +4,27 @@
 
 {% block content %}
 
-{% for item in response.items %}
-
-<div>
-	<img style="float: left;" src="{{ item.snippet.thumbnails.default.url }}" />
-	<ul style="float: left;">
-		<li><a href="{% url 'core:playlistdetails' item.id %}">{{ item.snippet.title }}</a></li>
-		<li>PL ID: {{ item.id }}</li>
-		<li>Video Count: {{ item.contentDetails.itemCount }}</li>
-	</ul>
-	<div style="clear: both;"></div>
+<div class="media my-2">
+    <img src="{{ user.youtubeprofile.thumbnail_uri }}" class="mr-3" alt="{{ user.youtubeprofile.channel_title }}">
+    <div class="media-body">
+        <h5 class="mt-0">{{ user.youtubeprofile.channel_title }} <small class="text-muted">{{ user.youtubeprofile.channel_id }}</small></h5>
+        <p>{{ user.youtubeprofile.description }}</p>
+        <small class="text-muted">Created on: {{user.youtubeprofile.publish_date }}</small>
+    </div>
 </div>
-<div>&nbsp;</div>
 
-{% endfor %}
+{% if task_id %}
 
-<div>
-</div>
+{% include 'core/progress_bar.html' %}
+
+{% endif %}
+
+<h1>Tracked Items</h1>
+&nbsp;
+<h2>Playlists</h2>
+&nbsp;
+<h2>Videos</h2>
+&nbsp;
 
 {% endblock %}
 

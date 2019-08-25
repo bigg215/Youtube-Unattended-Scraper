@@ -172,29 +172,6 @@ def oauth2_callback(request):
 	return redirect(return_url)
 
 @login_required
-def display_home(request):
-
-	credentials = get_storage(request).get()
-	if credentials is None or credentials.invalid == True:
-		return redirect('{0}?return_url={1}'.format(reverse('core:authorize'), request.build_absolute_uri()))
-	
-	youtube = googleapiclient.discovery.build(
-		'youtube', 'v3', credentials=credentials
-	)
-
-	api_request = youtube.playlists().list(
-		part="snippet,contentDetails",
-		maxResults=25,
-		mine=True,
-	)
-
-	response = api_request.execute()
-
-	return render(request, 'core/home.html', {
-		'response':response,
-	})
-
-@login_required
 def update_youtube_profile(request):
 	user = get_object_or_404(User, pk=request.user.id)
 
@@ -218,6 +195,51 @@ def update_youtube_profile(request):
 	return redirect('/core')
 
 @login_required
+def dashboard(request):
+
+	response = []
+
+	if 'job' in request.GET:
+		job_id = request.GET['job']
+		job = AsyncResult(job_id)
+		data = {'status': job.status}
+		if job.result is not None:
+			data.update(job.result)
+		return render(request, 'core/home.html', {
+			'response': response,
+			'data': data,
+			'task_id': job_id,
+		})
+	else:
+		return render(request, 'core/home.html', {
+			'response': response,
+	})
+
+
+@login_required
+def playlists_list(request):
+
+	credentials = get_storage(request).get()
+	if credentials is None or credentials.invalid == True:
+		return redirect('{0}?return_url={1}'.format(reverse('core:authorize'), request.build_absolute_uri()))
+	
+	youtube = googleapiclient.discovery.build(
+		'youtube', 'v3', credentials=credentials
+	)
+
+	api_request = youtube.playlists().list(
+		part="snippet,contentDetails",
+		maxResults=25,
+		mine=True,
+	)
+
+	response = api_request.execute()
+
+	return render(request, 'core/playlist_list.html', {
+		'response': response,
+	})
+
+@login_required
 def playlist_details(request, playlist):
 	credentials = get_storage(request).get()
 
@@ -234,28 +256,30 @@ def playlist_details(request, playlist):
 				'response': response,
 			})
 
+@login_required
 def video_details(request, video):
+	credentials = get_storage(request).get()
 
-	if 'job' in request.GET:
-		job_id = request.GET['job']
-		job = AsyncResult(job_id)
-		data = {'status': job.status}
-		if job.result is not None:
-			data.update(job.result)
-		return render(request, 'core/show.html', {
-			'data': data,
-			'task_id': job_id,
-		})
+	youtube = googleapiclient.discovery.build('youtube', 'v3', credentials=credentials)
 
+	api_request = youtube.videos().list(
+		part="snippet,contentDetails,statistics,player",
+		id=video,
+	)
+
+	response = api_request.execute()
+	
 	yt = YouTube(f'http://youtube.com/watch?v={video}')
 
 	return render(request, 'core/video.html', {
 		'progressive': yt.streams.filter(progressive=True).order_by('resolution').desc().all(),
-		'dash':  yt.streams.filter(adaptive=True, only_video=True).desc().all(),
+		'dash':  yt.streams.filter(adaptive=True, only_video=True).all(),
 		'audio': yt.streams.filter(only_audio=True).desc().all(),
+		'response': response,
 		'video': video,
 	})
 
+@login_required
 def video_download_state(request):
 	data = 'Fail'
 	if request.is_ajax():
@@ -273,13 +297,9 @@ def video_download_state(request):
 	json_data = json.dumps(data)
 	return HttpResponse(json_data, content_type='application/json')
 
+@login_required
 def video_download(request, video, itag):
-	
-	#yt = YouTube(f'http://youtube.com/watch?v={video}')
-	#yt.streams.get_by_itag(itag).download(settings.VIDEO_DIR)
 	
 	job = download_video_task.delay(video, itag)
 
-	#messages.success(request, f'Video with an ID of {video} and itag of {itag} downloaded successfully to {settings.VIDEO_DIR}')
-
-	return redirect(reverse('core:videodetails', args=(video,)) + '?job=' + job.id)
+	return redirect(reverse('core:home') + '?job=' + job.id)

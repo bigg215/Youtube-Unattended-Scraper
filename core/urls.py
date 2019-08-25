@@ -8,12 +8,13 @@ from . import views
 
 app_name = 'core'
 urlpatterns = [
-    path('', views.display_home, name='home'),
+    path('', views.dashboard, name='home'),
+    path('poll_state/', views.video_download_state, name="downloadstate"),
     path('authorize/', views.oauth2_authorize, name='authorize'),
     path('auth/', views.oauth2_callback, name='authcallback'),
     path('updateprofile/', views.update_youtube_profile, name='updateprofile'),
-    path('playlists/<str:playlist>', views.playlist_details, name="playlistdetails"),
-    path('video/poll_state', views.video_download_state, name="downloadstate"),
-    path('video/<str:video>', views.video_details, name="videodetails"),
-    path('video/<str:video>/<int:itag>', views.video_download, name="videodownload"),
+    path('playlists/', views.playlists_list, name="listplaylists"),
+    path('playlists/<str:playlist>/', views.playlist_details, name="playlistdetails"),
+    path('video/<str:video>/', views.video_details, name="videodetails"),
+    path('video/<str:video>/<int:itag>/', views.video_download, name="videodownload"),
 ]

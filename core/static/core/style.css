@@ -1,0 +1,21 @@
+
+.progress {
+    width:50%;
+    background:yellow;
+}
+
+.bar {
+    height:15px;
+    width:0%;
+    background:tomato;
+    text-align:right;
+}
+
+#progress-wrapper {
+    margin-bottom: 25px;
+}
+
+#iframe-holder, iframe {
+    display: block;
+    margin: 0 auto;
+}

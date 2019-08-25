@@ -4,17 +4,19 @@
 
 {% block content %}
 
-{% for item in response.items %}
-<div>
-	<img style="float: left;" src="{{ item.snippet.thumbnails.default.url }}" />
-	<ul style="float: left">
-		<li><a href="{% url 'core:videodetails' item.snippet.resourceId.videoId %}">{{ item.snippet.title }}</a></li>
-		<li>{{ item.snippet.resourceId.videoId }}</li>
-		<li><a href="https://www.youtube.com/watch?v={{ item.snippet.resourceId.videoId }}" target="_blank">Youtube Player Link</a></li>
-	</ul>
-</div>
-<div style="clear: both;">&nbsp;</div>
-{% endfor %}
+<ul class="list-unstyled my-4">
+	{% for item in response.items %}
+	<li class="media my-4">
+		<img src="{{ item.snippet.thumbnails.medium.url }}" class="align-self-start mr-3" alt="{{ item.snippet.title }}">
+		<div class="media-body">
+			<h5 class="mt-0 mb-1">{{ item.snippet.title }}</h5>
+			<small class="text-muted"><em>{{ item.snippet.resourceId.videoId }}</em></small>
+			<p>{{ item.snippet.description|truncatechars:255 }}</p>
+			<a class="btn btn-primary" href="{% url 'core:videodetails' item.snippet.resourceId.videoId %}" role="button">View Details</span></a>
+		</div>
+	</li>
+	{% endfor %}	
+</ul>
 
 {% endblock %}
 
