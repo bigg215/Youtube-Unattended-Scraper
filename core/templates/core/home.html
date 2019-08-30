@@ -21,10 +21,38 @@
 
 <h1>Tracked Items</h1>
 &nbsp;
-<h2>Playlists</h2>
-&nbsp;
 <h2>Videos</h2>
-&nbsp;
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Video ID</th>
+            <th scope="col">Title</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for item in response %} 
+    <tr>
+        <th scope="row">{{ forloop.counter }}</th>
+        <td>{{ item.video_id }}</td>
+        <td>{{ item.title }}</td>
+        <td><a class="btn btn-primary btn-sm" href="{% url 'core:videodetails' item.video_id %}" role="button">View Details</a>
+            <form class="inline-form" action="{% url 'core:untagvideo' %}" onsubmit="return confirm('Do you really want to submit the form?');" method="post">
+                {% csrf_token %}
+                <input id="video_id" type="hidden" name="video_id" value="{{ item.video_id }}">
+                <input id="untag_id" type="hidden" name="untag_id" value="{{ item.video_id }}">
+                <input id="request_path" type="hidden" name="next" value="{{ request.path }}">
+                <button type="submit" class="btn btn-danger btn-sm">Untrack</button>
+            </form></td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="3">No tracked videos available.</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
 
 {% endblock %}
 

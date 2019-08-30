@@ -2,15 +2,16 @@ from django.conf import settings
 from django.shortcuts import get_object_or_404, render, redirect, HttpResponse, reverse
 from django.views.generic.base import View
 from django.contrib import messages
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.urls import resolve
+from django.db import IntegrityError
 
 from oauth2client.client import flow_from_clientsecrets, OAuth2WebServerFlow, FlowExchangeError
 from oauth2client.clientsecrets import loadfile
 from oauth2client.contrib import xsrfutil
 from oauth2client.contrib.django_util.storage import DjangoORMStorage
-from .models import CredentialsModel, User
+from .models import CredentialsModel, User, VideoModel
 
 import googleapiclient.discovery
 import googleapiclient.errors
@@ -21,6 +22,7 @@ import os
 
 from dateutil import parser
 import datetime
+import isodate
 
 from django.views.generic import TemplateView
 
@@ -197,7 +199,8 @@ def update_youtube_profile(request):
 @login_required
 def dashboard(request):
 
-	response = []
+	tagged_videos = VideoModel.objects.filter(user_id=request.user.id)
+	response = tagged_videos
 
 	if 'job' in request.GET:
 		job_id = request.GET['job']
@@ -252,8 +255,11 @@ def playlist_details(request, playlist):
 
 	response = api_request.execute()
 
+	tags = VideoModel.objects.values_list('video_id', flat=True).filter(user_id=request.user)
+
 	return render(request, 'core/playlist.html', {
 				'response': response,
+				'video_tags': tags,
 			})
 
 @login_required
@@ -267,9 +273,13 @@ def video_details(request, video):
 		id=video,
 	)
 
-	response = api_request.execute()
+	response = api_request.execute() 
+
+	response['items'][0]['contentDetails']['duration'] = isodate.parse_duration(response['items'][0]['contentDetails']['duration'])
 	
 	yt = YouTube(f'http://youtube.com/watch?v={video}')
+
+	tags = VideoModel.objects.filter(user_id=request.user, video_id=video)
 
 	return render(request, 'core/video.html', {
 		'progressive': yt.streams.filter(progressive=True).order_by('resolution').desc().all(),
@@ -277,6 +287,7 @@ def video_details(request, video):
 		'audio': yt.streams.filter(only_audio=True).desc().all(),
 		'response': response,
 		'video': video,
+		'video_tags': tags,
 	})
 
 @login_required
@@ -303,3 +314,27 @@ def video_download(request, video, itag):
 	job = download_video_task.delay(video, itag)
 
 	return redirect(reverse('core:home') + '?job=' + job.id)
+
+@login_required
+def tag_video(request):
+	if request.method == 'POST':
+		if 'video_id' in request.POST.keys() and request.POST['video_id']:
+			if 'untag_id' in request.POST.keys() and request.POST['untag_id']:
+				tag = get_object_or_404(VideoModel, user=request.user, video_id=request.POST['video_id'])
+				tag.delete()
+				messages.success(request, 'Video removed from the tag database.', extra_tags='alert alert-success')
+			else:
+				try:
+					tag = VideoModel(user=request.user, video_id=request.POST['video_id'])
+					tag.title = request.POST['title']
+					tag.thumbnail_uri = request.POST['thumbnail_uri']
+					tag.save()
+					messages.success(request, 'Video added to the tag database.', extra_tags='alert alert-success')
+				except IntegrityError as e:
+					messages.error(request, e, extra_tags='alert alert-danger')
+		else:
+			messages.error(request, 'No video_id in request object.', extra_tags='alert alert-danger')
+	else:
+		messages.error(request, 'Request method not POST.', extra_tags='alert alert-danger')
+	next = request.POST.get('next', '/')
+	return HttpResponseRedirect(next)

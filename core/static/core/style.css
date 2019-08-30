@@ -11,6 +11,10 @@
     text-align:right;
 }
 
+.inline-form {
+    display: inline-block;
+}
+
 #progress-wrapper {
     margin-bottom: 25px;
 }

@@ -12,12 +12,30 @@
 			<h5 class="mt-0 mb-1">{{ item.snippet.title }}</h5>
 			<small class="text-muted"><em>{{ item.snippet.resourceId.videoId }}</em></small>
 			<p>{{ item.snippet.description|truncatechars:255 }}</p>
-			<a class="btn btn-primary" href="{% url 'core:videodetails' item.snippet.resourceId.videoId %}" role="button">View Details</span></a>
+			<a class="btn btn-primary" href="{% url 'core:videodetails' item.snippet.resourceId.videoId %}" role="button">View Details</a>
+			
+			{% if item.snippet.resourceId.videoId in video_tags %}
+			<form class="inline-form" action="{% url 'core:untagvideo' %}" onsubmit="return confirm('Do you really want to submit the form?');" method="post">
+				{% csrf_token %}
+				<input id="video_id" type="hidden" name="video_id" value="{{ item.snippet.resourceId.videoId }}">
+				<input id="untag_id" type="hidden" name="untag_id" value="{{ item.snippet.resourceId.videoId }}">
+				<input id="request_path" type="hidden" name="next" value="{{ request.path }}">
+				<button type="submit" class="btn btn-danger">Untrack</button>
+			</form>
+			{% else %}
+			<form class="inline-form" action="{% url 'core:tagvideo' %}" method="post">
+				{% csrf_token %}
+				<input id="video_id" type="hidden" name="video_id" value="{{ item.snippet.resourceId.videoId }}">
+				<input id="title" type="hidden" name="title" value="{{ item.snippet.title }}">
+                <input id="thumbnail_uri" type="hidden" name="thumbnail_uri" value="{{ item.snippet.thumbnails.medium.url }}">
+				<input id="request_path" type="hidden" name="next" value="{{ request.path }}">
+				<input class="btn btn-primary my-2" type="submit" value="Track Video">
+			</form>
+			{% endif %}
 		</div>
 	</li>
 	{% endfor %}	
 </ul>
-
 {% endblock %}
 
 

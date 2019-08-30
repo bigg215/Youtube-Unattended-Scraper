@@ -34,6 +34,13 @@
               </nav>
       </header>
       <main>
+        {% if messages %}
+
+          {% for message in messages %}
+          <div{% if message.tags %} class="my-2 {{ message.tags }}"{% endif %} role='alert'>{{ message }}</div>
+          {% endfor %}
+     
+        {% endif %}
         {% block content %}
         {% endblock %}
       </main>

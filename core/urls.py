@@ -15,6 +15,8 @@ urlpatterns = [
     path('updateprofile/', views.update_youtube_profile, name='updateprofile'),
     path('playlists/', views.playlists_list, name="listplaylists"),
     path('playlists/<str:playlist>/', views.playlist_details, name="playlistdetails"),
+    path('vtag/', views.tag_video, name="tagvideo"),
+    path('vtag/delete/', views.tag_video, name="untagvideo"),
     path('video/<str:video>/', views.video_details, name="videodetails"),
     path('video/<str:video>/<int:itag>/', views.video_download, name="videodownload"),
 ]

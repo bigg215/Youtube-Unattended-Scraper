@@ -13,6 +13,7 @@ google-auth-oauthlib==0.4.0
 httplib2==0.13.1
 idna==2.8
 importlib-metadata==0.19
+isodate==0.6.0
 jsonpickle==1.2
 kombu==4.6.4
 -e git://github.com/Schweigi/oauth2client.git@ac121e803b0f8f664faee0c12260541d1defb817#egg=oauth2client

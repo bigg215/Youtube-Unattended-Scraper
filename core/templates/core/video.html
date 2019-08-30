@@ -9,11 +9,29 @@
             <img src="{{ item.snippet.thumbnails.medium.url }}" class="align-self-start mr-3" alt="{{ item.snippet.title }}">
             <div class="media-body">
                 <h5 class="mt-0 mb-1">{{ item.snippet.title }} <small class="text-muted"><em>{{ item.id }}</em></small></h5>
-                <small class="text-muted"><strong>{{ item.contentDetails.duration }}</strong> Published by {{ item.snippet.channelTitle }} on {{ item.snippet.publishedAt }}</small>
+                <span class="badge badge-dark">{{ item.contentDetails.duration }}</span><small class="text-muted"> Published by {{ item.snippet.channelTitle }} on {{ item.snippet.publishedAt }}</small>
                 <p class="my-2">{{ item.snippet.description }}</p>
                 {% for tag in item.snippet.tags %}
                 <span class="badge badge-pill badge-info">{{ tag }}</span>
                 {% endfor %}
+                {% if video_tags %}
+                <form action="{% url 'core:untagvideo' %}" onsubmit="return confirm('Do you really want to submit the form?');" method="post">
+                    {% csrf_token %}
+                    <input id="video_id" type="hidden" name="video_id" value="{{ item.id }}">
+                    <input id="untag_id" type="hidden" name="untag_id" value="{{ item.id }}">
+                    <input id="request_path" type="hidden" name="next" value="{{ request.path }}">
+                    <button type="submit" class="btn btn-danger my-2">Untrack</button>
+                </form>
+                {% else %}
+                <form action="{% url 'core:tagvideo' %}" method="post">
+                    {% csrf_token %}
+                    <input id="video_id" type="hidden" name="video_id" value="{{ item.id }}">
+                    <input id="title" type="hidden" name="title" value="{{ item.snippet.title }}">
+                    <input id="thumbnail_uri" type="hidden" name="thumbnail_uri" value="{{ item.snippet.thumbnails.medium.url }}">
+                    <input id="request_path" type="hidden" name="next" value="{{ request.path }}">
+                    <input class="btn btn-primary my-2" type="submit" value="Track Video">
+                </form>
+                {% endif %}
                 <div id="iframe-holder" class="container my-4">
                     {% autoescape off %}{{ item.player.embedHtml }}{% endautoescape %}
                 </div>
@@ -32,7 +50,7 @@
 <h3>Available Streams</h3>
 
 <h4>Progress Streams</h4>
-<table class="table">
+<table class="table table-sm">
     <thead>
         <tr>
             <th scope="col">#</th>
@@ -53,14 +71,14 @@
             <td>{{ item.video_codec }}</td>
             <td>{{ item.audio_codec }}</td>
             <td>{{ item.mime_type }}</td>
-            <td><a class="btn btn-primary" href="{% url 'core:videodownload' video item.itag %}" role="button">Download</span></a></td>
+            <td><a class="btn btn-primary btn-sm" href="{% url 'core:videodownload' video item.itag %}" role="button">Download</span></a></td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 
 <h4>Adaptive Streams</h4>
-<table class="table">
+<table class="table table-sm">
     <thead>
         <tr>
             <th scope="col">#</th>
@@ -80,7 +98,7 @@
             <td>{{ item.fps }}</td>
             <td>{{ item.video_codec }}</td>
             <td>{{ item.mime_type }}</td>
-            <td><a class="btn btn-primary" href="{% url 'core:videodownload' video item.itag %}" role="button">Download</span></a></td>
+            <td><a class="btn btn-primary btn-sm" href="{% url 'core:videodownload' video item.itag %}" role="button">Download</span></a></td>
         </tr>
         {% endif %}
         {% endfor %}
@@ -88,7 +106,7 @@
 </table>
 
 <h4>Audio Only Streams</h4>
-<table class="table">
+<table class="table table-sm">
     <thead>
         <tr>
             <th scope="col">#</th>
@@ -107,7 +125,7 @@
             <td>{{ item.fps }}</td>
             <td>{{ item.audio_codec }}</td>
             <td>{{ item.mime_type }}</td>
-            <td><a class="btn btn-primary" href="{% url 'core:videodownload' video item.itag %}" role="button">Download</span></a></td>
+            <td><a class="btn btn-primary btn-sm" href="{% url 'core:videodownload' video item.itag %}" role="button">Download</span></a></td>
         </tr>
         {% endfor %}
     </tbody>
