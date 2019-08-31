@@ -8,7 +8,6 @@
   <link rel="stylesheet" type="text/css" href="{% static 'core/style.css' %}">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 </head>
 <body>
   <div class="container">
@@ -26,6 +25,9 @@
                     <li class="nav-item">
                       <a class="nav-link" href="{% url 'core:listplaylists' %}">Playlists</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'core:videosearch' %}">Videos</a>
+                      </li>
                   </ul>
                   <form class="form-inline my-2 my-lg-0">
                     <a class="btn btn-primary" href="{% url 'logout' %}" role="button">Logout</a>

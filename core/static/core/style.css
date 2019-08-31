@@ -1,16 +1,3 @@
-
-.progress {
-    width:50%;
-    background:yellow;
-}
-
-.bar {
-    height:15px;
-    width:0%;
-    background:tomato;
-    text-align:right;
-}
-
 .inline-form {
     display: inline-block;
 }

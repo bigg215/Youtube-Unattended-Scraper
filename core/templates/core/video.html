@@ -71,7 +71,15 @@
             <td>{{ item.video_codec }}</td>
             <td>{{ item.audio_codec }}</td>
             <td>{{ item.mime_type }}</td>
-            <td><a class="btn btn-primary btn-sm" href="{% url 'core:videodownload' video item.itag %}" role="button">Download</span></a></td>
+            <td>
+                <form class="inline-form" action="{% url 'core:videodownload' %}" method="post">
+                    {% csrf_token %}
+                    <input id="video_id" type="hidden" name="video_id" value="{{ video }}">
+                    <input id="itag_id" type="hidden" name="itag_id" value="{{ item.itag }}">
+                    <input id="request_path" type="hidden" name="next" value="{{ request.path }}">
+                    <button type="submit" class="btn btn-primary btn-sm">Download</button>
+                </form>
+            </td>
         </tr>
         {% endfor %}
     </tbody>
@@ -98,7 +106,15 @@
             <td>{{ item.fps }}</td>
             <td>{{ item.video_codec }}</td>
             <td>{{ item.mime_type }}</td>
-            <td><a class="btn btn-primary btn-sm" href="{% url 'core:videodownload' video item.itag %}" role="button">Download</span></a></td>
+            <td>
+                <form class="inline-form" action="{% url 'core:videodownload' %}" method="post">
+                    {% csrf_token %}
+                    <input id="video_id" type="hidden" name="video_id" value="{{ video }}">
+                    <input id="itag_id" type="hidden" name="itag_id" value="{{ item.itag }}">
+                    <input id="request_path" type="hidden" name="next" value="{{ request.path }}">
+                    <button type="submit" class="btn btn-primary btn-sm">Download</button>
+                </form>
+            </td>
         </tr>
         {% endif %}
         {% endfor %}
@@ -125,7 +141,15 @@
             <td>{{ item.fps }}</td>
             <td>{{ item.audio_codec }}</td>
             <td>{{ item.mime_type }}</td>
-            <td><a class="btn btn-primary btn-sm" href="{% url 'core:videodownload' video item.itag %}" role="button">Download</span></a></td>
+            <td>
+                <form class="inline-form" action="{% url 'core:videodownload' %}" method="post">
+                    {% csrf_token %}
+                    <input id="video_id" type="hidden" name="video_id" value="{{ video }}">
+                    <input id="itag_id" type="hidden" name="itag_id" value="{{ item.itag }}">
+                    <input id="request_path" type="hidden" name="next" value="{{ request.path }}">
+                    <button type="submit" class="btn btn-primary btn-sm">Download</button>
+                </form>
+            </td>
         </tr>
         {% endfor %}
     </tbody>

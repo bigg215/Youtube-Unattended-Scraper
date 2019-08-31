@@ -1,0 +1,42 @@
+{% extends 'core/base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block title %}Playlist Item Details{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center my-4">
+    <form action="{% url 'core:videosearch' %}" method="post">
+        {% crispy form %}
+    </form>
+</div>
+
+{% if request.method == "POST" %}
+{% for item in response.items %}
+<div id="iframe-holder" class="container my-4">
+    {% autoescape off %}{{ item.player.embedHtml }}{% endautoescape %}
+</div>
+<div class="row justify-content-center my-2">
+    <a class="btn btn-primary mx-1" href="{% url 'core:videodetails' item.id %}" role="button">View Details</a>
+    <form class="inline-form mx-1" action="{% url 'core:videodownload' %}" method="post">
+        {% csrf_token %}
+        <input id="video_id" type="hidden" name="video_id" value="{{ item.id }}">
+        <input id="request_path" type="hidden" name="next" value="{{ request.path }}">
+        <button type="submit" class="btn btn-primary">Download</button>
+    </form>
+</div>
+{% empty %}
+<p>No video found.</p>
+{% endfor %}
+
+{% if dump %}
+<h5>API Reponse</h5>
+<pre class="prettyprint">
+{{ dump }}
+</pre>
+<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+{% endif %}
+{% endif %}
+
+{% endblock %}

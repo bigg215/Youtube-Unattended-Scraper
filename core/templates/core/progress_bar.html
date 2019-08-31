@@ -1,10 +1,12 @@
-<div id="progress-wrapper">
-    <p>Task Status: <span id="user-count">PENDING</span></p>    
+<div id="progress-wrapper" class="alert alert-dark" role="alert">
+    <button id="returnBtn" type="button" class="close" style="visibility:hidden;" onClick="removeProgressBar()" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+    <p>Status: <span id="user-count">PENDING</span></p>    
     <div class="status"></div>
     <div class="progress">
-        <div class="bar"></div>
+        <div class="progress-bar" role="progressbar"></div>
     </div>
-    <input id="returnBtn" type=button value="Ok" style="visibility:hidden; margin-top:10px;"onClick="removeProgressBar()">
 </div>
     
 <script type="text/javascript">
@@ -31,12 +33,17 @@
                         if (result.status == 'SUCCESS' || result.status == 'FAILURE') {
                             willstop = 1;
                             document.getElementById("user-count").textContent=result.status;
-                            jQuery('.bar').css({'width': 100 + '%'});
-                            jQuery('.bar').html(100 + '%');
+                            jQuery('.progress-bar').css({'width': 100 + '%'});
+                            jQuery('.progress-bar').html(100 + '%');
                             document.getElementById('returnBtn').style.visibility = 'visible';
+                            if(result.status == 'SUCCESS') {
+                                jQuery('.progress-bar').addClass('bg-success');
+                            } else if (result.status == 'FAILURE') {
+                                jQuery('.progress-bar').addClass('bg-danger')
+                            };
                             } else if (result.status !== 'PENDING') {
-                            jQuery('.bar').css({'width': result.process_percent + '%'});
-                            jQuery('.bar').html(result.process_percent + '%');
+                            jQuery('.progress-bar').css({'width': result.process_percent + '%'});
+                            jQuery('.progress-bar').html(result.process_percent + '%');
                             document.getElementById("user-count").textContent=result.status;
                             };
                         }

@@ -13,6 +13,8 @@ from oauth2client.contrib import xsrfutil
 from oauth2client.contrib.django_util.storage import DjangoORMStorage
 from .models import CredentialsModel, User, VideoModel
 
+from .forms import VideoSearchForm
+
 import googleapiclient.discovery
 import googleapiclient.errors
 import json
@@ -23,6 +25,7 @@ import os
 from dateutil import parser
 import datetime
 import isodate
+import re
 
 from django.views.generic import TemplateView
 
@@ -291,6 +294,45 @@ def video_details(request, video):
 	})
 
 @login_required
+def video_search(request):
+	if request.method == 'POST':
+		form = VideoSearchForm(request.POST)
+		if form.is_valid():
+			regex = r"(youtu\.be\/|youtube\.com\/(watch\?(.*&)?v=|(embed|v)\/))([^\?&\"'>]+)"
+			url = form.cleaned_data['youtube_url']
+			matches = re.search(regex, url)
+			if matches is not None:
+				video = matches.group(5)
+				credentials = get_storage(request).get()
+				youtube = googleapiclient.discovery.build('youtube', 'v3', credentials=credentials)
+
+				api_request = youtube.videos().list(
+					part="id,player",
+					id=video,
+				)
+				response = api_request.execute()
+
+				dump = json.dumps(response, sort_keys=True, indent=4)
+
+				if response['pageInfo']['totalResults'] == 0:
+					return render(request, 'core/video_search.html', {
+						'form': form,
+						'dump': dump,
+					})
+				else:
+					return render(request, 'core/video_search.html', {
+						'form': form,
+						'response': response,
+						'dump': dump,
+					})
+			messages.error(request, 'Not a valid youtube url.', extra_tags='alert alert-warning')
+	else:
+		form = VideoSearchForm()
+	return render(request, 'core/video_search.html', {
+		'form': form,
+	})
+
+@login_required
 def video_download_state(request):
 	data = 'Fail'
 	if request.is_ajax():
@@ -309,11 +351,21 @@ def video_download_state(request):
 	return HttpResponse(json_data, content_type='application/json')
 
 @login_required
-def video_download(request, video, itag):
-	
-	job = download_video_task.delay(video, itag)
-
-	return redirect(reverse('core:home') + '?job=' + job.id)
+def video_download(request):
+	if request.method == 'POST':
+		next = request.POST.get('next', request.META.get('HTTP_REFERER', '/'))
+		if 'video_id' in request.POST.keys() and request.POST['video_id']:
+			if 'itag_id' in request.POST.keys() and request.POST['itag_id']:
+				job = download_video_task.delay(request.POST['video_id'], itag=request.POST['itag_id'])
+			else:
+				job = download_video_task.delay(request.POST['video_id'])
+			return redirect(reverse('core:home') + '?job=' + job.id)
+		else:
+			messages.error(request, 'Video Download: No valid video id.', extra_tags='alert alert-danger')
+			return HttpResponseRedirect(next)
+	else:
+		messages.error(request, 'Video Download: Request method not POST.', extra_tags='alert alert-danger')
+		return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 @login_required
 def tag_video(request):
