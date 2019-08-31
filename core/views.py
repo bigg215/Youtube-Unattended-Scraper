@@ -247,21 +247,32 @@ def playlists_list(request):
 
 @login_required
 def playlist_details(request, playlist):
+	
+	maxResults = int(request.GET.get('rpp', 5))
+	maxResults = min(maxResults, 50)
+	pageToken = request.GET.get('page', '')
+
 	credentials = get_storage(request).get()
-
 	youtube = googleapiclient.discovery.build('youtube', 'v3', credentials=credentials)
-
 	api_request = youtube.playlistItems().list(
 		part="snippet",
 		playlistId=playlist,
+		maxResults=maxResults,
+		pageToken=pageToken,
 	)
-
 	response = api_request.execute()
+
+	resultsPerPage = response['pageInfo']['resultsPerPage']
+	totalResults = response['pageInfo']['totalResults']
+	totalPages = totalResults // resultsPerPage
 
 	tags = VideoModel.objects.values_list('video_id', flat=True).filter(user_id=request.user)
 
 	return render(request, 'core/playlist.html', {
 				'response': response,
+				'resultsPerPage': resultsPerPage,
+				'totalResults': totalResults,
+				'totalPages': totalPages,
 				'video_tags': tags,
 			})
 

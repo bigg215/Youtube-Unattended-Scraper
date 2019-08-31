@@ -23,10 +23,15 @@
                       <a class="nav-link" href="{% url 'core:home' %}">Dashboard</a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link" href="{% url 'core:listplaylists' %}">Playlists</a>
+                      <a class="nav-link" href="{% url 'core:listplaylists' %}">My Playlists</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'core:videosearch' %}">Videos</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          Utilities
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                          <a class="dropdown-item" href="{% url 'core:videosearch' %}">Video Lookup</a>
+                          <a class="dropdown-item" href="#">Playlist Lookup</a>
                       </li>
                   </ul>
                   <form class="form-inline my-2 my-lg-0">

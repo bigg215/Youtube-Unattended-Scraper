@@ -3,10 +3,32 @@
 {% block title %}Playlist Item Details{% endblock %}
 
 {% block content %}
-
+<div class="d-flex justify-content-between my-4">
+	<nav aria-label="Page navigation">
+		<ul class="pagination">
+			<li class="page-item {% if not response.prevPageToken %}disabled{% endif %}">
+			<a class="page-link" href="?rpp={{ resultsPerPage }}&page={{ response.prevPageToken }}" {% if not response.prevPageToken %}tabindex="-1"{% endif %} aria-disabled="true">Previous</a>
+			</li>
+			<li class="page-item {% if not response.nextPageToken %}disabled{% endif %}">
+			<a class="page-link" {% if not response.nextPageToken %}tabindex="-1"{% endif %} href="?rpp={{ resultsPerPage }}&page={{ response.nextPageToken }}">Next</a>
+			</li>
+		</ul>
+	</nav>
+	<div class="dropdown">
+		<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			Results Per Page
+		</button>
+		<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+			<a class="dropdown-item" href="?rpp=5">5</a>
+			<a class="dropdown-item" href="?rpp=10">15</a>
+			<a class="dropdown-item" href="?rpp=25">25</a>
+			<a class="dropdown-item" href="?rpp=50">50</a>
+		</div>
+	</div>
+</div>
 <ul class="list-unstyled my-4">
 	{% for item in response.items %}
-	<li class="media my-4">
+	<li class="media my-2">
 		<img src="{{ item.snippet.thumbnails.medium.url }}" class="align-self-start mr-3" alt="{{ item.snippet.title }}">
 		<div class="media-body">
 			<h5 class="mt-0 mb-1">{{ item.snippet.title }}</h5>
@@ -36,6 +58,19 @@
 	</li>
 	{% endfor %}	
 </ul>
+<div class="d-flex justify-content-between my-4">
+	<nav aria-label="Page navigation">
+		<ul class="pagination">
+			<li class="page-item {% if not response.prevPageToken %}disabled{% endif %}">
+			<a class="page-link" href="?rpp={{ resultsPerPage }}&page={{ response.prevPageToken }}" {% if not response.prevPageToken %}tabindex="-1"{% endif %} aria-disabled="true">Previous</a>
+			</li>
+			<li class="page-item {% if not response.nextPageToken %}disabled{% endif %}">
+			<a class="page-link" {% if not response.nextPageToken %}tabindex="-1"{% endif %} href="?rpp={{ resultsPerPage }}&page={{ response.nextPageToken }}">Next</a>
+			</li>
+		</ul>
+	</nav>
+	<small class="text-muted">Showing {{ resultsPerPage }} results per page | {{ totalResults }} Total Results | {{ totalPages|add:"1" }} Pages.</small>
+</div>
 {% endblock %}
 
 
