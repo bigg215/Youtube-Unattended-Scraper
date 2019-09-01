@@ -15,3 +15,16 @@ class VideoSearchForm(forms.Form):
             <p>Accepts youtube.com, youtu.be, and embedded html links.</p>
             """),
         )
+
+class PlaylistSearchForm(forms.Form):
+    playlist_url = forms.URLField(label='', max_length=200)
+
+    def __init__(self, *args, **kwargs):
+        super(PlaylistSearchForm, self).__init__(*args, **kwargs)
+        self.helper= FormHelper()
+        self.helper.layout = Layout(
+            FieldWithButtons('playlist_url', Submit('search', 'SEARCH')),
+            HTML("""
+            <p>Accepts youtube.com links and embedded html links.</p>
+            """),
+        )

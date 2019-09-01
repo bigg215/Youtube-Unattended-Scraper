@@ -13,7 +13,7 @@ from oauth2client.contrib import xsrfutil
 from oauth2client.contrib.django_util.storage import DjangoORMStorage
 from .models import CredentialsModel, User, VideoModel
 
-from .forms import VideoSearchForm
+from .forms import VideoSearchForm, PlaylistSearchForm
 
 import googleapiclient.discovery
 import googleapiclient.errors
@@ -36,6 +36,10 @@ from celery.result import AsyncResult
 
 _CSRF_KEY = 'google_oauth2_csrf_token'
 _FLOW_KEY = 'google_oauth2_flow_{0}'
+
+VIDEO_REGEX = r"(youtu\.be\/|youtube\.com\/(watch\?(.*&)?v=|(embed|v)\/))([^\?&\"'>]+)"
+CHANNEL_REGEX = r"^(?:(http|https):\/\/[a-zA-Z-]*\.{0,1}[a-zA-Z-]{3,}\.[a-z]{2,})\/channel\/([a-zA-Z0-9_]{3,})$"
+PLAYLIST_REGEX = r"(?:youtube\.com.*(?:\?|&)(?:v|list)=|youtube\.com.*embed\/|youtube\.com.*v\/|youtu\.be\/)((?!videoseries)[a-zA-Z0-9_]*)"
 
 def _create_flow(request, scopes, return_url=None):
 	"""Creates flow object.
@@ -306,42 +310,82 @@ def video_details(request, video):
 
 @login_required
 def video_search(request):
+	dump = ''
+	response = {}
 	if request.method == 'POST':
 		form = VideoSearchForm(request.POST)
 		if form.is_valid():
-			regex = r"(youtu\.be\/|youtube\.com\/(watch\?(.*&)?v=|(embed|v)\/))([^\?&\"'>]+)"
 			url = form.cleaned_data['youtube_url']
-			matches = re.search(regex, url)
+			matches = re.search(VIDEO_REGEX, url)
 			if matches is not None:
 				video = matches.group(5)
 				credentials = get_storage(request).get()
 				youtube = googleapiclient.discovery.build('youtube', 'v3', credentials=credentials)
-
 				api_request = youtube.videos().list(
 					part="id,player",
 					id=video,
 				)
 				response = api_request.execute()
-
 				dump = json.dumps(response, sort_keys=True, indent=4)
-
-				if response['pageInfo']['totalResults'] == 0:
-					return render(request, 'core/video_search.html', {
-						'form': form,
-						'dump': dump,
-					})
-				else:
-					return render(request, 'core/video_search.html', {
-						'form': form,
-						'response': response,
-						'dump': dump,
-					})
-			messages.error(request, 'Not a valid youtube url.', extra_tags='alert alert-warning')
+			else:
+				messages.error(request, 'Not a valid youtube url.', extra_tags='alert alert-warning')
+		else:
+			messages.error(request, 'Invalid URL format.', extra_tags='alert alert-warning')
 	else:
 		form = VideoSearchForm()
 	return render(request, 'core/video_search.html', {
 		'form': form,
+		'response': response,
+		'dump': dump,
 	})
+
+@login_required
+def playlist_search(request):
+	dump = ''
+	response = ''
+	if request.method == 'POST':
+		form = PlaylistSearchForm(request.POST)
+		if form.is_valid():
+			url = form.cleaned_data['playlist_url']
+			channel_filter_match = re.search(CHANNEL_REGEX, url)
+			credentials = get_storage(request).get()
+			youtube = googleapiclient.discovery.build(
+				'youtube', 'v3', credentials=credentials
+			)
+			if channel_filter_match is not None:
+				channel = channel_filter_match.group(2)
+				api_request = youtube.playlists().list(
+					part="snippet,contentDetails",
+					maxResults=25,
+					channelId=channel,
+				)
+				response = api_request.execute()
+				dump = json.dumps(response, sort_keys=True, indent=4)
+			else:
+				playlist_filter_match = re.search(PLAYLIST_REGEX, url)
+				video_filter_match = re.search(VIDEO_REGEX, url)
+				if playlist_filter_match is not None:
+					if video_filter_match is None or (video_filter_match.group(5) is not None and video_filter_match.group(2) is not None):
+						playlist = playlist_filter_match.group(1)
+						api_request = youtube.playlists().list(
+							part="snippet,contentDetails",
+							maxResults=25,
+							id=playlist,
+						)
+						response = api_request.execute()
+						dump = json.dumps(response, sort_keys=True, indent=4)
+					else:
+						messages.error(request, 'Invalid YouTube url.', extra_tags='alert alert-warning')
+		else:
+			messages.error(request, 'Invalid URL format.', extra_tags='alert alert-warning')
+	else:
+		form = PlaylistSearchForm()
+	return render(request, 'core/playlist_search.html', {
+		'form': form,
+		'response': response,
+		'dump': dump,
+	})
+		
 
 @login_required
 def video_download_state(request):
